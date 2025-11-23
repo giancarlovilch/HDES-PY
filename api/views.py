@@ -5,7 +5,11 @@ from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from schedule.models import Worker, Skill, WorkerSkill, Report
 from .serializers import WorkerSerializer, DaySerializer, SkillSerializer, WorkerProfileSerializer, ReportSerializer
+from django.http import JsonResponse
 
+def api_php_login_test(request):
+    # Este endpoint sirve solo para pruebas CI.
+    return JsonResponse({"status": "ok"}, status=200)
 
 @api_view(["GET"])
 def employees_list(request):

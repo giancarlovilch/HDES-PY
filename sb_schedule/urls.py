@@ -12,6 +12,8 @@ urlpatterns = [
 
     # API test endpoint for GitHub Actions
     path("api/php/login/", views.api_php_login_test, name="api_php_login_test"),
+    path("health/schedule/", views.health_schedule, name="health_schedule"),
+
 
     # Auth vía PHP
     path('login/', views.php_login_form, name='php_login_form'),
@@ -29,7 +31,7 @@ urlpatterns = [
     path('suppliers/', include('suppliers.urls', namespace='suppliers')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('legal/', include('legal.urls', namespace='legal')),
-
+    
 
     # API
     path('api/', include('api.urls', namespace='api')),
@@ -37,3 +39,4 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+

@@ -97,3 +97,6 @@ from django.views.decorators.csrf import csrf_exempt
 def api_php_login_test(request):
     return JsonResponse({"status": "ok"}, status=200)
 
+@csrf_exempt
+def health_schedule(request):
+    return JsonResponse({"status": "schedule-ok"}, status=200)

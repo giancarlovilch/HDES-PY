@@ -1,0 +1,45 @@
+name: Django Health Check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Instalar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Aplicar migraciones
+      run: |
+        python manage.py migrate --noinput
+
+    - name: Levantar Django en background
+      run: |
+        nohup python manage.py runserver 0.0.0.0:8000 > /dev/null 2>&1 &
+        sleep 5
+
+    - name: Health-check básico (GET /)
+      run: |
+        STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/)
+        echo "Código HTTP recibido: $STATUS"
+        if [ "$STATUS" -ne 200 ]; then
+          echo "❌ FAIL: Django NO respondió correctamente."
+          exit 1
+        fi
+        echo "✔ Django respondió correctamente (200 OK)."

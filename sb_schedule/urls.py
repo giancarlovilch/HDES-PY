@@ -13,6 +13,8 @@ urlpatterns = [
     # API test endpoint for GitHub Actions
     path("api/php/login/", views.api_php_login_test, name="api_php_login_test"),
     path("health/schedule/", views.health_schedule, name="health_schedule"),
+    path("health/", views.health_check, name="health_check"),
+
 
 
     # Auth vía PHP

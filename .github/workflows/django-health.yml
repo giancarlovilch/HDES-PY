@@ -36,10 +36,11 @@ jobs:
 
     - name: Health-check básico (GET /)
       run: |
-        STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/)
+        STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/health/)
         echo "Código HTTP recibido: $STATUS"
         if [ "$STATUS" -ne 200 ]; then
           echo "❌ FAIL: Django NO respondió correctamente."
           exit 1
         fi
         echo "✔ Django respondió correctamente (200 OK)."
+

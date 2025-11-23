@@ -100,3 +100,10 @@ def api_php_login_test(request):
 @csrf_exempt
 def health_schedule(request):
     return JsonResponse({"status": "schedule-ok"}, status=200)
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def health_check(request):
+    return JsonResponse({"status": "ok"}, status=200)

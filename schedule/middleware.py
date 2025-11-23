@@ -18,7 +18,7 @@ class PHPAuthMiddleware:
         ]
         
         if not request.user_php and not any(request.path.startswith(p) for p in allowed_paths):
-            return redirect("php_login_form")
+            return None  
        
         # Crear Worker automático si no existe
         if request.user_php:

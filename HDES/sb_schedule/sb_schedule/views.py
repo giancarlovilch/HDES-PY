@@ -62,3 +62,30 @@ def php_logout(request):
     request.session.flush()
     messages.success(request, "Has cerrado sesión.")
     return redirect("php_login_form")
+
+def sso_login(request):
+    token = request.GET.get("token")
+
+    if not token:
+        messages.error(request, "Token SSO no recibido.")
+        return redirect("php_login_form")
+
+    # Validar token contra PHP
+    url = f"{settings.PHP_API_BASE}/api_validate_sso.php"
+
+    try:
+        r = requests.post(url, json={"token": token}, timeout=5)
+        data = r.json()
+    except Exception as e:
+        messages.error(request, "Error al conectar con el servidor SSO.")
+        return redirect("php_login_form")
+
+    if not data.get("success"):
+        messages.error(request, data.get("message", "Token SSO inválido"))
+        return redirect("php_login_form")
+
+    # Crear sesión Django
+    request.session["user"] = data["user"]
+
+    messages.success(request, "Inicio de sesión SSO exitoso.")
+    return redirect("index")

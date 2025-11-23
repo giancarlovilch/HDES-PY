@@ -1,14 +1,19 @@
-<!-- schedule/templates/schedule/base.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sistema de Asignaciones{% endblock %}</title>
+
+    <!-- CSS principal -->
     <link rel="stylesheet" href="{% static 'schedule/css/style.css' %}">
+
 </head>
+
 <body>
+
     <header>
         <h1>Sistema de Asignaciones Semanales</h1>
         <nav class="navbar">
@@ -30,5 +35,10 @@
         {% block content %}
         {% endblock %}
     </div>
+
+    <!-- AREA PARA SCRIPTS -->
+    {% block scripts %}
+    {% endblock %}
+
 </body>
 </html>

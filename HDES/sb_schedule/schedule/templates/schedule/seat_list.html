@@ -2,72 +2,72 @@
 
 {% block content %}
 <div class="container">
-    <div class="assignment-form">
-        <h2>Nueva Asignación</h2>
-        <form method="post" action="">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="worker">Trabajador:</label>
-                <select name="worker" id="worker" required>
-                    <option value="">Selecciona un trabajador</option>
-                    {% for w in workers %}
-                        <option value="{{ w.id }}">{{ w.name }}</option>
-                    {% empty %}
-                        <option value="">No hay trabajadores disponibles</option>
-                    {% endfor %}
-                </select>
-            </div>
 
-            <div class="form-group">
-                <label for="seat">Asiento disponible:</label>
-                <select name="seat" id="seat" required>
-                    <option value="">Selecciona un asiento</option>
-                    {% for day in days %}
-                        {% for seat in day.seats.all %}
-                            {% if not seat.worker %}
-                                <option value="{{ seat.id }}">
-                                    {{ day.get_day_of_week_display }} - Turno {{ seat.position }}
-                                </option>
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Asignar</button>
-        </form>
-    </div>
+    <h2 class="mb-4">Asignar mis horarios</h2>
 
     <div class="calendar-container">
-        <h2>Semana Actual</h2>
         <div class="calendar">
+
             {% for day in days %}
-                <div class="day">
-                    <div class="day-header">{{ day.get_day_of_week_display }}</div>
-                    {% for seat in day.seats.all %}
-                        <div class="time-slot {% if seat.worker %}occupied{% else %}vacant{% endif %}">
-                            <span class="slot-time">Turno {{ seat.position }}:</span>
-                            <span class="slot-worker">
-                                {% if seat.worker %}
-                                    {{ seat.worker.name }}
-                                {% else %}
-                                    Vacante
+            
+                <div class="day mb-4 p-3 border rounded">
+                    <h4 class="day-header mb-3">{{ day.get_day_of_week_display }}</h4>
+
+                    {% comment %} --- CAJERAS: FIRST 3 SEATS --- {% endcomment %}
+                    <div class="section-label">Cajeras</div>
+                    {% for seat in day.seats.all|slice:":3" %}
+                        <div class="time-slot role-{{ forloop.counter }} {% if seat.worker %}filled{% else %}free{% endif %}">
+                            <span class="slot-time fw-bold">
+                                Cajera {{ forloop.counter }}{% if forloop.last %}{% endif %}:
+                            </span>
+                            {% include "schedule/slot_controls.html" %}
+                        </div>
+                    {% endfor %}
+
+                    {% comment %} --- VENDEDORAS & ALMACÉN: NEXT 3 SEATS --- {% endcomment %}
+                    <div class="section-label mt-3">Vendedoras</div>
+                    {% for seat in day.seats.all|slice:"3:6" %}
+                        <div class="time-slot role-{{ forloop.counter|add:"3" }} {% if seat.worker %}filled{% else %}free{% endif %}">
+                            <span class="slot-time fw-bold">
+                                {% if forloop.counter == 1 %} Vendedora 1:
+                                {% elif forloop.counter == 2 %} Vendedora 2:
+                                {% else %} Almacén:
                                 {% endif %}
                             </span>
+                            {% include "schedule/slot_controls.html" %}
+                        </div>
+                    {% endfor %}
+
+                    {% comment %} --- ASISTENTE LOCAL (OPCIONAL) --- {% endcomment %}
+                    <div class="section-label mt-3">Asistente</div>
+                    {% for seat in day.seats.all|slice:"6:7" %}
+                        <div class="time-slot role-7 {% if seat.worker %}filled{% else %}free{% endif %}">
+                            <span class="slot-time fw-bold">Asistente:</span>
+                            {% include "schedule/slot_controls.html" %}
                         </div>
                     {% endfor %}
                 </div>
+
             {% endfor %}
+
         </div>
     </div>
 </div>
 
-<div class="reset-section">
+<div class="text-center mt-4">
     <form method="post" action="{% url 'schedule:reset_assignments' %}">
         {% csrf_token %}
-        <button type="submit" class="btn btn-delete" onclick="return confirm('¿Estás seguro de que quieres reiniciar todas las asignaciones?')">
+        <button type="submit" class="btn btn-danger"
+            onclick="return confirm('¿Estás seguro de que deseas reiniciar todas las asignaciones?')">
             Reiniciar Todas las Asignaciones
         </button>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const socket = new WebSocket("ws://127.0.0.1:8000/ws/schedule/");
+    socket.onmessage = () => location.reload();
+</script>
 {% endblock %}

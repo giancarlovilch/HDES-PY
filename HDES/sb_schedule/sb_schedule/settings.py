@@ -22,7 +22,7 @@ INSTALLED_APPS = [
     'suppliers',
     'employees',
     'accounts',
-    'rest_framework',           # ok conservar si lo usas
+    'rest_framework',           
 ]
 
 MIDDLEWARE = [
@@ -33,7 +33,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'schedule.middleware.PHPAuthMiddleware',   # <- necesario para exponer user_php
+    'schedule.middleware.PHPAuthMiddleware',   
 ]
 
 ROOT_URLCONF = 'sb_schedule.urls'
@@ -70,10 +70,32 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_DIRS = []
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # === Config PHP Auth ===
 PHP_API_BASE = os.environ.get("PHP_API_BASE", "http://localhost:3000/myphp")
+
+# ============================
+# CONFIGURACIÓN DE SESIÓN DJANGO
+# ============================
+
+# La sesión expira cuando se cierra el navegador
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Duración de la sesión por inactividad (5 minutos = 300 segundos)
+# PARA PRUEBAS
+SESSION_COOKIE_AGE = 300  
+
+# Cada request renueva el tiempo de sesión
+SESSION_SAVE_EVERY_REQUEST = True
+
+ASGI_APPLICATION = "sb_schedule.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}

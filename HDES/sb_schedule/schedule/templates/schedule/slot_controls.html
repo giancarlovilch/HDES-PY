@@ -1,0 +1,26 @@
+<span class="slot-worker">
+    {% if seat.worker %}
+        {% if seat.worker.id == user_worker.id %}
+            <span class="fw-bold">Tú</span>
+            <form method="post" class="m-0 d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="seat" value="{{ seat.id }}">
+                <input type="hidden" name="action" value="free">
+                <button type="submit" class="btn btn-warning btn-sm">Liberar</button>
+            </form>
+        {% else %}
+            {{ seat.worker.name }}
+        {% endif %}
+    {% else %}
+        <span class="text-muted">-</span>
+    {% endif %}
+</span>
+
+{% if not seat.worker %}
+<form method="post" class="m-0">
+    {% csrf_token %}
+    <input type="hidden" name="seat" value="{{ seat.id }}">
+    <input type="hidden" name="action" value="assign">
+    <button type="submit" class="btn btn-primary btn-sm">Asignarme</button>
+</form>
+{% endif %}

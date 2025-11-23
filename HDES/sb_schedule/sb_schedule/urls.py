@@ -14,6 +14,9 @@ urlpatterns = [
     path('login/', views.php_login_form, name='php_login_form'),
     path('logout/', views.php_logout, name='php_logout'),
 
+     # SSO
+    path('sso/login/', views.sso_login, name='sso_login'),
+
     # Apps
     path('schedule/', include('schedule.urls', namespace='schedule')),
     path('inventory/', include('inventory.urls', namespace='inventory')),
@@ -23,6 +26,7 @@ urlpatterns = [
     path('suppliers/', include('suppliers.urls', namespace='suppliers')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('legal/', include('legal.urls', namespace='legal')),
+
 
     # API
     path('api/', include('api.urls', namespace='api')),

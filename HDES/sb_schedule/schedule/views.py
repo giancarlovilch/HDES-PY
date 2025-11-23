@@ -11,41 +11,87 @@ from .models import Day, Seat, Worker
 class SeatListView(View):
     def get(self, request):
         days = Day.objects.prefetch_related('seats__worker').all().order_by('id')
-        available_workers = Worker.objects.filter(seats__isnull=True)
+        user_worker = request.worker
+
         
         return render(request, 'schedule/seat_list.html', {
             'days': days,
-            'workers': available_workers
+            'user_worker': user_worker
         })
 
+
     def post(self, request):
-        worker_id = request.POST.get('worker')
         seat_id = request.POST.get('seat')
-
-        if not worker_id or not seat_id:
-            messages.error(request, "Debe seleccionar un trabajador y un asiento")
-            return redirect('schedule:seat_list')
-
+        action = request.POST.get('action')  # NUEVO
+        
         try:
-            worker = Worker.objects.get(pk=worker_id)
             seat = Seat.objects.get(pk=seat_id)
+            worker = request.worker
             
-            if worker.seats.exists():
-                messages.error(request, "Este trabajador ya tiene un asiento asignado")
-                return redirect('schedule:seat_list')
+            # --- ACCIÓN LIBERAR ---
+            if action == "free":
+                if seat.worker == worker:
+                    seat.worker = None
+                    seat.save()
+
+                    # Enviar actualización por WebSocket
+                    from channels.layers import get_channel_layer
+                    from asgiref.sync import async_to_sync
+                    
+                    layer = get_channel_layer()
+                    async_to_sync(layer.group_send)(
+                        "schedule",
+                        {
+                            "type": "seat_update",
+                            "data": {
+                                "seat_id": seat.id,
+                                "worker": None,
+                                "day": seat.day.get_day_of_week_display(),
+                                "position": seat.position
+                            }
+                        }
+                    )
+                    
+                    messages.success(request, "Has liberado tu turno.")
+                else:
+                    messages.error(request, "No puedes liberar un turno que no te pertenece.")
                 
-            if seat.worker is not None:
-                messages.error(request, "Este asiento ya está ocupado")
                 return redirect('schedule:seat_list')
-                
-            seat.worker = worker
-            seat.save()
-            messages.success(request, f"Asiento asignado correctamente a {worker.name}")
             
-        except (Worker.DoesNotExist, Seat.DoesNotExist):
-            messages.error(request, "Trabajador o asiento no válido")
+            # --- ACCIÓN ASIGNAR ---
+            if action == "assign":
+                if seat.worker is not None:
+                    messages.error(request, "Este asiento ya está ocupado.")
+                    return redirect('schedule:seat_list')
+
+                seat.worker = worker
+                seat.save()
+
+                # Notificar por WebSocket
+                from channels.layers import get_channel_layer
+                from asgiref.sync import async_to_sync
+                
+                layer = get_channel_layer()
+                async_to_sync(layer.group_send)(
+                    "schedule",
+                    {
+                        "type": "seat_update",
+                        "data": {
+                            "seat_id": seat.id,
+                            "worker": worker.name,
+                            "day": seat.day.get_day_of_week_display(),
+                            "position": seat.position
+                        }
+                    }
+                )
+
+                messages.success(request, "Te asignaste correctamente.")
+        
+        except Seat.DoesNotExist:
+            messages.error(request, "Asiento no válido.")
 
         return redirect('schedule:seat_list')
+
 
 class WorkerListView(ListView):
     model = Worker

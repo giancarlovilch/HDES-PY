@@ -2,53 +2,57 @@ name: API Test
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:  # Permite ejecutarlo manualmente
+    branches: ["main"]
+  workflow_dispatch: # Permite ejecutarlo manualmente
 
 jobs:
   api-test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout código
-      uses: actions/checkout@v4
+      - name: Checkout código
+        uses: actions/checkout@v4
 
-    - name: Configurar Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Instalar dependencias
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Aplicar migraciones
-      run: |
-        python manage.py migrate --noinput
+      - name: Aplicar migraciones
+        run: |
+          python manage.py migrate --noinput
 
-    - name: Iniciar servidor Django en background
-      run: |
-        nohup python manage.py runserver 0.0.0.0:8000 > server.log 2>&1 &
-        sleep 5
+      - name: Iniciar servidor Django en background
+        run: |
+          nohup python manage.py runserver 0.0.0.0:8000 > server.log 2>&1 &
+          sleep 5
 
-    - name: Probar endpoint /api/php/login/ con curl
-      run: |
-        echo "Probando endpoint /api/php/login/"
-        STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/api/php/login/)
-        echo "Código HTTP: $STATUS"
-        if [ "$STATUS" -ne 200 ]; then
-          echo "❌ FAIL: La API NO devolvió estado 200."
-          exit 1
-        fi
-        echo "✔ La API respondió correctamente."
+      - name: Probar endpoint /api/php/login/ con POST
+        run: |
+          echo "Probando endpoint POST /api/php/login/"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST http://127.0.0.1:8000/api/php/login/ \
+            -H "Content-Type: application/json" \
+            -d '{"nickname":"testuser","password":"test"}')
 
-    - name: Probar endpoint /schedule/ con curl
-      run: |
-        STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/schedule/)
-        echo "Código HTTP: $STATUS"
-        if [ "$STATUS" -ne 200 ]; then
-          echo "❌ FAIL: La vista /schedule/ no respondió correctamente."
-          exit 1
-        fi
-        echo "✔ /schedule/ respondió correctamente."
+          echo "Código HTTP: $STATUS"
+          if [ "$STATUS" -ne 200 ]; then
+            echo "❌ FAIL: La API POST no devolvió estado 200."
+            exit 1
+          fi
+          echo "✔ La API POST respondió correctamente."
+
+      - name: Probar endpoint /schedule/ con curl
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/schedule/)
+          echo "Código HTTP: $STATUS"
+          if [ "$STATUS" -ne 200 ]; then
+            echo "❌ FAIL: La vista /schedule/ no respondió correctamente."
+            exit 1
+          fi
+          echo "✔ /schedule/ respondió correctamente."

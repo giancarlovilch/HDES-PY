@@ -10,6 +10,9 @@ urlpatterns = [
     # Home / Dashboard
     path('', views.index, name='index'),
 
+    # API test endpoint for GitHub Actions
+    path("api/php/login/", views.api_php_login_test, name="api_php_login_test"),
+
     # Auth vía PHP
     path('login/', views.php_login_form, name='php_login_form'),
     path('logout/', views.php_logout, name='php_logout'),

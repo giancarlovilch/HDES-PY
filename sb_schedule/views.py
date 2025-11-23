@@ -89,3 +89,8 @@ def sso_login(request):
 
     messages.success(request, "Inicio de sesión SSO exitoso.")
     return redirect("index")
+
+from django.http import JsonResponse
+
+def api_php_login_test(request):
+    return JsonResponse({"status": "ok"}, status=200)

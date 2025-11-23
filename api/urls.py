@@ -12,7 +12,6 @@ urlpatterns = [
     path("reports/", views.reports_list, name="reports_list"),
     path("reports/<int:pk>/", views.report_detail, name="report_detail"),
     path("php/login/", views.php_login, name="php_login"),
-    path("api/php/login/", views.api_php_login_test, name="api_php_login_test"),
 
 
 ]

@@ -91,6 +91,9 @@ def sso_login(request):
     return redirect("index")
 
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt
 def api_php_login_test(request):
     return JsonResponse({"status": "ok"}, status=200)
+
